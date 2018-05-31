@@ -16,37 +16,31 @@
                 $('#log').append('<br>Disconnected');
             });
             socket.on('my response', function(msg) {
-                $('#log').append('<br>Received: ' + msg.data);
+                $('#log').append('<br>Received: ' + msg);
             });
 
             // event handler for server sent data
             // the data is displayed in the "Received" section of the page
             // handlers for the different forms in the page
             // these send data to the server in a variety of ways
-            $('form#emit').submit(function(event) {
-                socket.emit('my event', {data: $('#emit_data').val()});
+            $('form#createroom').submit(function(event) {
+                socket.emit('createRoom', {userid: $('#create_room').val()});
                 return false;
             });
-            $('form#broadcast').submit(function(event) {
-                socket.emit('my broadcast event', {data: $('#broadcast_data').val()});
+            $('form#joinroom').submit(function(event) {
+                socket.emit('joinRoom', {roomid: $('#join_room').val(), userid: $('#join_user').val()});
                 return false;
             });
-            $('form#join').submit(function(event) {
-                socket.emit('join', {room: $('#join_room').val()});
+            $('form#leaveroom').submit(function(event) {
+                socket.emit('leaveRoom', {roomid: $('#leave_room').val(), userid: $('#leave_user').val()});
                 return false;
             });
-            $('form#leave').submit(function(event) {
-                socket.emit('leave', {room: $('#leave_room').val()});
+            $('form#deleteroom').submit(function(event) {
+                socket.emit('closeRoom', {roomid: $('#delete_room').val()});
                 return false;
             });
-            $('form#send_room').submit(function(event) {
-                socket.emit('my room event', {room: $('#room_name').val(), data: $('#room_data').val()});
-                return false;
-            });
-            $('form#close').submit(function(event) {
-                socket.emit('close room', {room: $('#close_room').val()});
-                return false;
-            });
+
+
             $('form#disconnect').submit(function(event) {
                 socket.emit('disconnect request');
                 return false;
@@ -57,31 +51,58 @@
 <body>
     <h1>Flask-SocketIO Test</h1>
     <h2>Send:</h2>
-    <form id="emit" method="POST" action='#'>
-        <input type="text" name="emit_data" id="emit_data" placeholder="Message">
-        <input type="submit" value="Echo">
+    <form id="createroom" method="POST" action='#'>
+        <input type="text" name="create_room" id="create_room" placeholder="userid">
+        <input type="submit" value="create">
     </form>
-    <form id="broadcast" method="POST" action='#'>
-        <input type="text" name="broadcast_data" id="broadcast_data" placeholder="Message">
-        <input type="submit" value="Broadcast">
+    <form id="joinroom" method="POST" action='#'>
+        <input type="text" name="join_room" id="join_room" placeholder="roomid">
+        <input type="text" name="join_user" id="join_user" placeholder="userid">
+        <input type="submit" value="join">
     </form>
-    <form id="join" method="POST" action='#'>
-        <input type="text" name="join_room" id="join_room" placeholder="Room Name">
-        <input type="submit" value="Join Room">
+    <form id="leaveroom" method="POST" action='#'>
+        <input type="text" name="leave_room" id="leave_room" placeholder="roomid">
+        <input type="text" name="leave_user" id="leave_user" placeholder="userid">
+        <input type="submit" value="leave">
     </form>
-    <form id="leave" method="POST" action='#'>
-        <input type="text" name="leave_room" id="leave_room" placeholder="Room Name">
-        <input type="submit" value="Leave Room">
+    <form id="deleteroom" method="POST" action='#'>
+        <input type="text" name="delete_room" id="delete_room" placeholder="roomid">
+        <input type="submit" value="delete">
     </form>
-    <form id="send_room" method="POST" action='#'>
-        <input type="text" name="room_name" id="room_name" placeholder="Room Name">
-        <input type="text" name="room_data" id="room_data" placeholder="Message">
-        <input type="submit" value="Send to Room">
+
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="imgfile">
+        <input type="submit" value="Upload">
     </form>
-    <form id="close" method="POST" action="#">
-        <input type="text" name="close_room" id="close_room" placeholder="Room Name">
-        <input type="submit" value="Close Room">
+
+    <form id="showface" method="POST" action='#'>
+        <input type="text" name="sf_token" id="sf_token" placeholder="img_token">
+        <input type="text" name="sf_room" id="sf_room" placeholder="roomid">
+        <input type="submit" value="showface">
     </form>
+
+    <form id="addface" method="POST" action='#'>
+        <input type="text" name="ad_position" id="ad_position" placeholder="position">
+        <input type="text" name="ad_room" id="ad_room" placeholder="roomid">
+        <input type="submit" value="addface">
+    </form>
+
+    <form id="selectface" method="POST" action='#'>
+        <input type="text" name="slf_face" id="slf_face" placeholder="faceid">
+        <input type="text" name="slf_user" id="slf_user" placeholder="userid">
+        <input type="text" name="slf_room" id="slf_room" placeholder="roomid">
+        <input type="submit" value="selectface">
+    </form>
+
+    <form id="uploadPSface" method="POST" action='#'>
+        <input type="text" name="slf_token" id="slf_token" placeholder="img_token">
+        <input type="text" name="slf_user" id="slf_user" placeholder="userid">
+        <input type="text" name="slf_room" id="slf_room" placeholder="roomid">
+        <input type="file" name="imgfile">
+        <input type="submit" value="updateface">
+    </form>
+
+
     <form id="disconnect" method="POST" action="#">
         <input type="submit" value="Disconnect">
     </form>

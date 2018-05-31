@@ -77,6 +77,7 @@ def get_fig(token):
 
 
 # -----------------------------------------------------------
+# socketio
 # Room
 @sio.on('createRoom', namespace='/cps')
 def join(sid, message):
@@ -254,6 +255,9 @@ def finishPS(sid, message):
                              'img_token': token},
              room=roomid, namespace='/cps')
 
+@sio.on('my event', namespace='/cps')
+def test_message(sid, message):
+    sio.emit('my response', {'log': message['log']}, room=sid, namespace='/cps')
 
 @sio.on('disconnect request', namespace='/cps')
 def disconnect_request(sid):
