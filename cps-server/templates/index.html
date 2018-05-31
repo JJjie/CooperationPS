@@ -39,6 +39,26 @@
                 socket.emit('closeRoom', {roomid: $('#delete_room').val()});
                 return false;
             });
+            $('form#showface').submit(function(event) {
+                socket.emit('showface', {roomid: $('#sf_room').val(), img_token: $('#sf_token').val()});
+                return false;
+            });
+            $('form#addface').submit(function(event) {
+                socket.emit('showface', {roomid: $('#sf_room').val(), position: $('#ad_position').val()});
+                return false;
+            });
+            $('form#selectface').submit(function(event) {
+                socket.emit('showface', {roomid: $('#slf_room').val(),
+                    userid: $('#slf_user').val(),
+                    faceid: $('#slf_face').val()});
+                return false;
+            });
+            $('form#uploadPSface').submit(function(event) {
+                socket.emit('showface', {roomid: $('#upf_room').val(),
+                    userid: $('#upf_user').val(),
+                    img_token: $('#upf_token').val()});
+                return false;
+            });
 
 
             $('form#disconnect').submit(function(event) {
@@ -95,10 +115,10 @@
     </form>
 
     <form id="uploadPSface" method="POST" action='#'>
-        <input type="text" name="slf_token" id="slf_token" placeholder="img_token">
-        <input type="text" name="slf_user" id="slf_user" placeholder="userid">
-        <input type="text" name="slf_room" id="slf_room" placeholder="roomid">
-        <input type="file" name="imgfile">
+        <input type="text" name="upf_token" id="upf_token" placeholder="img_token">
+        <input type="text" name="upf_user" id="upf_user" placeholder="userid">
+        <input type="text" name="upf_room" id="upf_room" placeholder="roomid">
+        <input type="file" name="upf_imgfile" id="upf_imgfile">
         <input type="submit" value="updateface">
     </form>
 
