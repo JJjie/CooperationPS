@@ -16,7 +16,8 @@
                 $('#log').append('<br>Disconnected');
             });
             socket.on('my response', function(msg) {
-                $('#log').append('<br>Received: ' + msg);
+                $('#log').append('<br>Received: ' + msg.data);
+                console.log(msg)
             });
 
             // event handler for server sent data
@@ -44,17 +45,17 @@
                 return false;
             });
             $('form#addface').submit(function(event) {
-                socket.emit('showface', {roomid: $('#sf_room').val(), position: $('#ad_position').val()});
+                socket.emit('addface', {roomid: $('#sf_room').val(), position: $('#ad_position').val()});
                 return false;
             });
             $('form#selectface').submit(function(event) {
-                socket.emit('showface', {roomid: $('#slf_room').val(),
+                socket.emit('selectface', {roomid: $('#slf_room').val(),
                     userid: $('#slf_user').val(),
                     faceid: $('#slf_face').val()});
                 return false;
             });
             $('form#uploadPSface').submit(function(event) {
-                socket.emit('showface', {roomid: $('#upf_room').val(),
+                socket.emit('uploadPSface', {roomid: $('#upf_room').val(),
                     userid: $('#upf_user').val(),
                     img_token: $('#upf_token').val()});
                 return false;

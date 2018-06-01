@@ -7,17 +7,20 @@
 
 async_mode = 'eventlet'
 
-from flask import Flask, render_template, request, jsonify, send_from_directory
-import eventlet
-import socketio
 import random
 from pathlib import Path
 import base64
 import time
+import socketio
+import eventlet
+import eventlet.wsgi
+from flask import Flask, render_template, request, jsonify, send_from_directory
 import imageProcessing as facep
 
 sio = socketio.Server(logger=True, async_mode=async_mode)
 app = Flask(__name__)
+app.wsgi_app = socketio.Middleware(sio, app.wsgi_app)
+app.config['SECRET_KEY'] = 'secret!'
 
 UPLOAD_FOLDER = 'upload'
 basedir = Path(__file__).parent.absolute()
@@ -78,9 +81,29 @@ def get_fig(token):
 
 # -----------------------------------------------------------
 # socketio
+
+@sio.on('my event', namespace='/cps')
+def message(sid, message):
+    sio.emit('my response', {'data': message['data']}, room=sid, namespace='/cps')
+
+@sio.on('disconnect request', namespace='/cps')
+def disconnect_request(sid):
+    sio.disconnect(sid, namespace='/cps')
+
+
+@sio.on('connect', namespace='/cps')
+def connect(sid, message):
+    sio.emit('my response', {'data': 'Connected', 'count': 0}, room=sid,
+             namespace='/cps')
+
+
+@sio.on('disconnect', namespace='/cps')
+def disconnect(sid):
+    print('Client disconnected')
+
 # Room
 @sio.on('createRoom', namespace='/cps')
-def join(sid, message):
+def create(sid, message):
     roomid = getRoomID()
     userid = message['userid']
     roomDB[roomid] = RoomInfo()
@@ -255,28 +278,7 @@ def finishPS(sid, message):
                              'img_token': token},
              room=roomid, namespace='/cps')
 
-@sio.on('my event', namespace='/cps')
-def test_message(sid, message):
-    sio.emit('my response', {'log': message['log']}, room=sid, namespace='/cps')
-
-@sio.on('disconnect request', namespace='/cps')
-def disconnect_request(sid):
-    sio.disconnect(sid, namespace='/cps')
-
-
-@sio.on('connect', namespace='/cps')
-def connect(sid, environ):
-    sio.emit('my response', {'data': 'Connected', 'count': 0}, room=sid,
-             namespace='/cps')
-
-
-@sio.on('disconnect', namespace='/cps')
-def disconnect(sid):
-    print('Client disconnected')
-
 
 if __name__ == '__main__':
-    app = socketio.Middleware(sio, app)
-
     # deploy as an eventlet WSGI server
     eventlet.wsgi.server(eventlet.listen(('', 5000)), app)
