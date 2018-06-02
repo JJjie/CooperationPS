@@ -230,22 +230,14 @@ def savefacePos(sid, message):
 def uploadPSface(sid, message):
     roomid = message['roomid']
     userid = message['userid']
-    token = message['img_token']
-    originfilename = base64.b64decode(token)
+    originfile = message['img_url']
+    replacefile = message['img2_url']
     position = roomDB[roomid].position[roomDB[roomid].select[userid]]
 
-    f = request.files['imgfile']
-    if f and allowed_file(f.filename):
-        ext = f.filename.rsplit('.', 1)[1]
-        unix_time = int(time.time())
-        new_filename = str(roomid) + "_" + str(userid) + "_" + str(unix_time) + '.' + ext
-        f.save(file_dir / new_filename)
-        facep.mergeImage(position, file_dir, new_filename, originfilename)
-        sio.emit('my response', {'errno': 0,
-                                 'errmsg': 'success',
-                                 'img_token': token}, room=roomid, namespace='/cps')
-    else:
-        sio.emit('my response', {'errno': 1, 'errmsg': 'fail'}, room=sid, namespace='/cps')
+    facep.mergeImage(position, replacefile, originfile)
+    sio.emit('my response', {'errno': 0,
+                             'errmsg': 'success',
+                             'img_url': originfile}, room=roomid, namespace='/cps')
 
 
 # finish the cooperation and return the fig

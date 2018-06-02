@@ -35,8 +35,8 @@ def recognizeFace(img_path):
         position.append([x2, x1, y2, y1])
     return position
 
-def mergeImage(position, filedir, filename, originfilename):
-    img = Image.open(filedir / filename)
-    oimg = Image.open(filedir / originfilename)
+def mergeImage(position, replacefile, originfile):
+    img = Image.open(replacefile)
+    oimg = Image.open(originfile)
     oimg.paste(img, position)
-    oimg.save(filedir / originfilename)
+    oimg.save(originfile)
