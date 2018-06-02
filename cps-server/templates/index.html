@@ -5,9 +5,25 @@
     <script type="text/javascript" src="//code.jquery.com/jquery-2.1.4.min.js"></script>
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.slim.js"></script>
     <script type="text/javascript" charset="utf-8">
+
         $(document).ready(function(){
             namespace = '/cps';
             var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+
+            $("#uploadBtn").on('click', function() {
+                $.ajax({
+                    url: '/imgfile/upload',
+                    type: 'POST',
+                    cache: false,
+                    data: new FormData($('#uploadImage')[0]),
+                    processData: false,
+                    contentType: false
+                }).done(function(res) {
+                    console.log(res)
+                }).fail(function(res) {
+                    console.log(res)
+                });
+            });
 
             socket.on('connect', function() {
                 socket.emit('my event', {data: 'I\'m connected!'});
@@ -41,7 +57,7 @@
                 return false;
             });
             $('form#showface').submit(function(event) {
-                socket.emit('showface', {roomid: $('#sf_room').val(), img_token: $('#sf_token').val()});
+                socket.emit('showface', {roomid: $('#sf_room').val(), img_url: $('#sf_url').val()});
                 return false;
             });
             $('form#addface').submit(function(event) {
@@ -57,7 +73,7 @@
             $('form#uploadPSface').submit(function(event) {
                 socket.emit('uploadPSface', {roomid: $('#upf_room').val(),
                     userid: $('#upf_user').val(),
-                    img_token: $('#upf_token').val()});
+                    img_url: $('#upf_url').val()});
                 return false;
             });
 
@@ -91,13 +107,13 @@
         <input type="submit" value="delete">
     </form>
 
-    <form method="POST" enctype="multipart/form-data">
-        <input type="file" name="imgfile">
-        <input type="submit" value="Upload">
+    <form id="uploadImage" enctype="multipart/form-data">
+        <input type="file" name="photo" id="photo">
+        <button id="uploadBtn" type="button">upload</button>
     </form>
 
     <form id="showface" method="POST" action='#'>
-        <input type="text" name="sf_token" id="sf_token" placeholder="img_token">
+        <input type="text" name="sf_url" id="sf_url" placeholder="img_url">
         <input type="text" name="sf_room" id="sf_room" placeholder="roomid">
         <input type="submit" value="showface">
     </form>
@@ -116,7 +132,7 @@
     </form>
 
     <form id="uploadPSface" method="POST" action='#'>
-        <input type="text" name="upf_token" id="upf_token" placeholder="img_token">
+        <input type="text" name="upf_url" id="upf_url" placeholder="img_url">
         <input type="text" name="upf_user" id="upf_user" placeholder="userid">
         <input type="text" name="upf_room" id="upf_room" placeholder="roomid">
         <input type="file" name="upf_imgfile" id="upf_imgfile">

@@ -9,12 +9,9 @@ async_mode = 'eventlet'
 
 import random
 from pathlib import Path
-import base64
-import time
 import socketio
-import eventlet
-import eventlet.wsgi
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify
+from flask_uploads import UploadSet, configure_uploads, IMAGES, patch_request_class
 import imageProcessing as facep
 
 sio = socketio.Server(logger=True, async_mode=async_mode)
@@ -22,11 +19,12 @@ app = Flask(__name__)
 app.wsgi_app = socketio.Middleware(sio, app.wsgi_app)
 app.config['SECRET_KEY'] = 'secret!'
 
-UPLOAD_FOLDER = 'upload'
-basedir = Path(__file__).parent.absolute()
-file_dir = basedir / UPLOAD_FOLDER
-file_dir.mkdir(parents=True, exist_ok=True)
-ALLOWED_EXTENSIONS = set(['png','jpg','JPG','PNG','gif','GIF'])
+
+app.config['UPLOADED_PHOTOS_DEST'] = Path(__file__).parent.absolute() / 'uploads'
+photos = UploadSet('photos', IMAGES)
+configure_uploads(app, photos)
+patch_request_class(app)  # 文件大小限制，默认为16MB
+
 
 # cache
 class RoomInfo:
@@ -40,13 +38,10 @@ roomContainer = []
 
 def getRoomID():
     while True:
-        id = random.random() * 10000
+        id = int(random.random() * 10000)
         if id not in roomContainer:
             roomContainer.append(id)
             return id
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.',1)[1] in ALLOWED_EXTENSIONS
 
 # -----------------------------------------------------------
 # route
@@ -56,26 +51,14 @@ def index():
 
 
 # upload the image
-@app.route('/imgfile/upload', methods=['POST'], strict_slashes=False)
+@app.route('/imgfile/upload', methods=['GET', 'POST'])
 def img_upload():
-    f = request.files['imgfile']
-    if f and allowed_file(f.filename):
-        ext = f.filename.rsplit('.', 1)[1]
-        unix_time = int(time.time())
-        new_filename = str(unix_time) + '.' + ext
-        f.save(file_dir / new_filename)
-        token = base64.b64encode(new_filename)
-        return jsonify({"errno": 0, "errmsg": "success", "img_token": token})
+    if request.method == 'POST' and 'photo' in request.files:
+        filename = photos.save(request.files['photo'])
+        file_url = photos.url(filename)
+        return jsonify({"errno": 0, "errmsg": "success", "img_url": file_url})
     else:
         return jsonify({"errno": 1, "errmsg": "fail"})
-
-# get the image
-@app.route('/imgfile/show/<token>')
-def get_fig(token):
-    filename = base64.b64decode(token)
-    file_path = file_dir / filename
-    if file_path.is_file():
-        return send_from_directory(file_dir, filename, as_attachment=True)
 
 
 
@@ -104,7 +87,7 @@ def disconnect(sid):
 # Room
 @sio.on('createRoom', namespace='/cps')
 def create(sid, message):
-    roomid = getRoomID()
+    roomid = str(getRoomID())
     userid = message['userid']
     roomDB[roomid] = RoomInfo()
     roomDB[roomid].roomid = roomid
@@ -135,7 +118,7 @@ def leave(sid, message):
     roomid = message['roomid']
     userid = message['userid']
     roomDB[roomid].users.pop(roomDB[roomid].users.index(userid))
-    sio.leave_room(sid, message['room'], namespace='/cps')
+    sio.leave_room(sid, message['roomid'], namespace='/cps')
     sio.emit('my response', {'users': roomDB[roomid].users,
                              'roomid': roomid,
                              'errno': 0,
@@ -154,15 +137,13 @@ def close(sid, message):
 # face recognition
 @sio.on('showface', namespace='/cps')
 def showface(sid, message):
-    token = message['img_token']
+    file_path = message['img_url']
     roomid = message['roomid']
-    filename = base64.b64decode(token)
-    file_path = file_dir / filename
     position = facep.recognizeFace(file_path)
     for i in range(len(position)):
         roomDB[roomid].position[i] = position[i]
     sio.emit('my response', {'position': roomDB[roomid].position,
-                             'img_token': token,
+                             'img_url': file_path,
                              'errno': 0,
                              'errmsg': 'success'},
              room=roomid, namespace='/cps')
@@ -281,4 +262,6 @@ def finishPS(sid, message):
 
 if __name__ == '__main__':
     # deploy as an eventlet WSGI server
-    eventlet.wsgi.server(eventlet.listen(('', 5000)), app)
+    import eventlet
+    import eventlet.wsgi
+    eventlet.wsgi.server(eventlet.listen(('', 8000)), app)
