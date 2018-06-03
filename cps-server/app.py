@@ -8,10 +8,10 @@
 async_mode = 'eventlet'
 
 import random
+import time
 from pathlib import Path
 import socketio
 from flask import Flask, render_template, request, jsonify
-from flask_uploads import UploadSet, configure_uploads, IMAGES, patch_request_class
 import imageProcessing as facep
 
 sio = socketio.Server(logger=True, async_mode=async_mode)
@@ -19,11 +19,13 @@ app = Flask(__name__)
 app.wsgi_app = socketio.Middleware(sio, app.wsgi_app)
 app.config['SECRET_KEY'] = 'secret!'
 
+file_dir = Path(__file__).parent.absolute() / 'uploads'
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
 
-app.config['UPLOADED_PHOTOS_DEST'] = Path(__file__).parent.absolute() / 'uploads'
-photos = UploadSet('photos', IMAGES)
-configure_uploads(app, photos)
-patch_request_class(app)  # 文件大小限制，默认为16MB
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 
 # cache
@@ -54,8 +56,12 @@ def index():
 @app.route('/imgfile/upload', methods=['GET', 'POST'])
 def img_upload():
     if request.method == 'POST' and 'photo' in request.files:
-        filename = photos.save(request.files['photo'])
-        file_url = photos.url(filename)
+        f = request.files['photo']
+        ext = f.filename.rsplit('.', 1)[1]
+        unix_time = int(time.time())
+        new_filename = str(unix_time) + str(int(random.random()*1000000)) + '.' + ext
+        f.save(file_dir / new_filename)
+        file_url = str(file_dir / new_filename)
         return jsonify({"errno": 0, "errmsg": "success", "img_url": file_url})
     else:
         return jsonify({"errno": 1, "errmsg": "fail"})
