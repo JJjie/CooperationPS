@@ -11,7 +11,7 @@ import random
 import time
 from pathlib import Path
 import socketio
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, url_for, send_from_directory
 import imageProcessing as facep
 
 sio = socketio.Server(logger=True, async_mode=async_mode)
@@ -20,6 +20,7 @@ app.wsgi_app = socketio.Middleware(sio, app.wsgi_app)
 app.config['SECRET_KEY'] = 'secret!'
 
 file_dir = Path(__file__).parent.absolute() / 'uploads'
+file_dir.mkdir(parents=True, exist_ok=True)
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB
 
@@ -60,12 +61,15 @@ def img_upload():
         ext = f.filename.rsplit('.', 1)[1]
         unix_time = int(time.time())
         new_filename = str(unix_time) + str(int(random.random()*1000000)) + '.' + ext
-        f.save(file_dir / new_filename)
-        file_url = str(file_dir / new_filename)
-        return jsonify({"errno": 0, "errmsg": "success", "img_url": file_url})
+        f.save(str(file_dir / new_filename))
+        file_path = url_for('uploaded_file', filename=new_filename)
+        return jsonify({"errno": 0, "errmsg": "success", "img_url": file_path})
     else:
         return jsonify({"errno": 1, "errmsg": "fail"})
 
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(file_dir, filename, as_attachment=True)
 
 
 # -----------------------------------------------------------
