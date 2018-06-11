@@ -1,13 +1,20 @@
 <!--index.wxml-->
 <view class="container">
-  <view class="userinfo">
-    <button wx:if="{{!hasUserInfo && canIUse}}" open-type="getUserInfo" bindgetuserinfo="getUserInfo"> 获取头像昵称 </button>
-    <block wx:else>
-      <image bindtap="bindViewTap" class="userinfo-avatar" src="{{userInfo.avatarUrl}}" background-size="cover"></image>
-      <text class="userinfo-nickname">{{userInfo.nickName}}</text>
-    </block>
+  <view class="main_header">
+    <image src='../images/4.jpg'></image>
+    <view class="title">
+      <text class="big">COOPERATION PS\n</text>
+      <text class="small">Hello, here you can use our app to ps together on one picture</text>
+    </view>
+    <view class="userinfo">
+      <open-data class="avatar" type="userAvatarUrl"></open-data>
+       <!-- <open-data class="nickname" type="userNickName"></open-data>  -->
+    </view>
+    
   </view>
-  <view class="usermotto">
-    <text class="user-motto">{{motto}}</text>
+  
+  <view class="content">
+    <button bindtap='build'>创建房间</button>
+    <button bindtap='enter'>进入房间</button>
   </view>
 </view>

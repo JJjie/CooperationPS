@@ -1,0 +1,7 @@
+<!--pages/start/start.wxml-->
+<view class="start_title" animation="{{animationData}}">
+  <view class="start_text">
+  CPS
+  </view>
+
+</view>

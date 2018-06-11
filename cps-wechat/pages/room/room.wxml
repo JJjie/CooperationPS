@@ -1,0 +1,19 @@
+<!--pages/room/room.wxml-->
+<view class="body">
+  <view class="room_info">
+    <image src="../images/5.jpg"></image>
+    <text class="iconfont icon-left">R {{room_num}}</text>
+  </view>
+  <view class="member_info">
+    <view><open-data class="avatar" type="userAvatarUrl"></open-data></view>
+    <view></view>
+    <view></view>
+    <view></view>
+    <view></view>
+    <view><image bindtap="invite" class="plus" src="../images/add.png"></image></view>
+  </view>
+  <view class="button_group">
+    <view class="start" bindtap="start_ps">开 始 P 图</view>
+  </view>
+</view>
+

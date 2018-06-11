@@ -1,17 +1,16 @@
 {
 	"description": "项目配置文件。",
 	"setting": {
-		"urlCheck": true,
+		"urlCheck": false,
 		"es6": true,
 		"postcss": true,
-		"minified": true,
-		"newFeature": true
+		"minified": true
 	},
 	"compileType": "miniprogram",
-	"libVersion": "1.9.94",
+	"libVersion": "2.0.9",
 	"appid": "wx335ec7cc1b0dabf3",
 	"projectname": "CooperationPS",
-	"isGameTourist": false,
+	"scripts": {},
 	"condition": {
 		"search": {
 			"current": -1,
@@ -22,7 +21,11 @@
 			"list": []
 		},
 		"game": {
-			"currentL": -1,
+			"current": -1,
+			"list": []
+		},
+		"plugin": {
+			"current": -1,
 			"list": []
 		},
 		"miniprogram": {

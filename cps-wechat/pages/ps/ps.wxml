@@ -1,0 +1,11 @@
+<!--pages/ps/ps.wxml-->
+<view id="flashEditorOut">
+        <view id="altContent2">
+            <text>美图秀秀2</text>
+        </view>
+        <view id="drap" class="drap">
+        	<input id="file" type="file" accept="image/*" />
+        	<text>可将图片拖拽该区域</text>
+        </view>
+	</view>
+
