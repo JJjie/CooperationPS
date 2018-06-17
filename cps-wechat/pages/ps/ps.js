@@ -1,6 +1,5 @@
 // pages/ps/ps.js
 var app = getApp()
-// var xiuxiu = require("xiuxiu.js");
 
 Page({
 

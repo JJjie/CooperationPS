@@ -2,7 +2,7 @@
 <view class="body">
   <view class="room_info">
     <image src="../images/5.jpg"></image>
-    <text class="iconfont icon-left">R {{room_num}}</text>
+    <text class="iconfont icon-left">R {{roomid}}</text>
   </view>
   <view class="member_info">
     <view><open-data class="avatar" type="userAvatarUrl"></open-data></view>
