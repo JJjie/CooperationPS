@@ -98,12 +98,16 @@ def disconnect(sid):
 @sio.on('createRoom', namespace='/cps')
 def create(sid, message):
     roomid = str(getRoomID())
+    userdata = {}
     userid = message['userid']
+    userurl= message['userurl']
+    userdata['userid'] = userid
+    userdata['userurl'] = userurl
     roomDB[roomid] = RoomInfo()
     roomDB[roomid].roomid = roomid
-    roomDB[roomid].users.append(userid)
+    roomDB[roomid].users.append(userdata)
     sio.enter_room(sid, roomid, namespace='/cps')
-    sio.emit('my response', {'userid': userid,
+    sio.emit('my response', {'users': roomDB[roomid].users,
                              'roomid': roomid,
                              'errno': 0,
                              'errmsg': 'success'},
@@ -113,8 +117,12 @@ def create(sid, message):
 @sio.on('joinRoom', namespace='/cps')
 def join(sid, message):
     roomid = message['roomid']
+    userdata = {}
     userid = message['userid']
-    roomDB[roomid].users.append(userid)
+    userurl= message['userurl']
+    userdata['userid'] = userid
+    userdata['userurl'] = userurl
+    roomDB[roomid].users.append(userdata)
     sio.enter_room(sid, roomid, namespace='/cps')
     sio.emit('my response', {'users': roomDB[roomid].users,
                              'roomid': roomid,
@@ -127,7 +135,10 @@ def join(sid, message):
 def leave(sid, message):
     roomid = message['roomid']
     userid = message['userid']
-    roomDB[roomid].users.pop(roomDB[roomid].users.index(userid))
+    for userdata in roomDB[roomid].users:
+          if userdata['userid'] ==userid:
+            roomDB[roomid].users.pop(roomDB[roomid].users.index(userdata))
+            break
     sio.leave_room(sid, message['roomid'], namespace='/cps')
     sio.emit('my response', {'users': roomDB[roomid].users,
                              'roomid': roomid,
